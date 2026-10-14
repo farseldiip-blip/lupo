@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'LUPO — Taste of Luxury',
     description: 'Cafe · Padel · Restaurant in Mansoura, Egypt.',
-    images: ['https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ydTAvJeSkOqdFVgsdMKB74YuDfKUYP.png'],
+    images: ['/lupo-logo.svg'],
   },
   icons: {
     icon: [
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/icon.svg',
+        url: '/lupo-logo.svg',
         type: 'image/svg+xml',
       },
     ],
