@@ -45,7 +45,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
+        <script dangerouslySetInnerHTML={{ __html: `(() => { try { if (sessionStorage.getItem('lupo-intro') === '1') document.documentElement.dataset.lupoIntroSeen = '1'; else { document.documentElement.removeAttribute('data-lupo-intro-seen'); document.body.classList.add('lupo-intro-active') } } catch (_) {} })()` }} />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
