@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `try { if (sessionStorage.getItem('lupo-intro') === '1') document.documentElement.classList.add('lupo-intro-seen'); else document.documentElement.classList.add('lupo-intro-active') } catch (e) {}` }} />
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `try { if (sessionStorage.getItem('lupo-intro') === '1') document.documentElement.classList.add('lupo-intro-seen'); else document.documentElement.classList.add('lupo-intro-active') } catch (e) {}` }} />
       </head>
       <body className="antialiased">
         <div id="lupo-intro-shell" className="lupo-intro fixed inset-0 z-[9999]" role="dialog" aria-label="Loading LUPO">
