@@ -14,13 +14,65 @@ const photos = [
 ]
 
 function Intro({ onDone }: { onDone: () => void }) {
-  const [show, setShow] = useState(true)
-  useEffect(() => { const seen = sessionStorage.getItem('lupo-intro'); if (seen) { onDone(); return }; const timer = setTimeout(() => { sessionStorage.setItem('lupo-intro','1'); setShow(false); setTimeout(onDone, 900) }, 2900); return () => clearTimeout(timer) }, [onDone])
-  if (!show) return <div className="fixed inset-0 z-[60] bg-[#D4B98A] curtain pointer-events-none" />
-  return <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#14241A] grain">
-    <div className="relative size-72 sm:size-96 animate-[rise_1s_ease_both]"><Image src={logo} alt="LUPO — Taste of Luxury" fill className="object-contain" priority /></div>
-    <div className="mt-5 h-px w-40 overflow-hidden bg-[#D4B98A]/20"><div className="h-full w-full origin-left animate-[scale-x_2.4s_ease_both] bg-[#D4B98A]" /></div>
-    <button onClick={() => { sessionStorage.setItem('lupo-intro','1'); setShow(false); setTimeout(onDone, 400) }} className="absolute bottom-8 text-xs uppercase tracking-[.28em] text-[#A9A38F] hover:text-[#F2E8D5]">Skip intro</button>
+  const [show, setShow] = useState(() => typeof document === 'undefined' || document.documentElement.dataset.lupoIntroSeen !== '1')
+  const [exiting, setExiting] = useState(false)
+
+  useEffect(() => {
+    if (!show) {
+      onDone()
+      return
+    }
+
+    document.body.classList.add('lupo-intro-active')
+    const startedAt = performance.now()
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let finished = false
+    let minimumTimer: number | undefined
+    let capTimer: number | undefined
+
+    const finish = () => {
+      if (finished) return
+      finished = true
+      window.clearTimeout(minimumTimer)
+      window.clearTimeout(capTimer)
+      sessionStorage.setItem('lupo-intro', '1')
+      document.documentElement.dataset.lupoIntroSeen = '1'
+      document.body.classList.remove('lupo-intro-active')
+      setExiting(true)
+      window.setTimeout(() => {
+        setShow(false)
+        onDone()
+      }, reducedMotion ? 300 : 420)
+    }
+
+    const criticalReady = Promise.allSettled([
+      document.fonts?.ready ?? Promise.resolve(),
+      new Promise<void>((resolve) => {
+        const image = new window.Image()
+        image.onload = () => resolve()
+        image.onerror = () => resolve()
+        image.src = '/icon.svg'
+      }),
+    ])
+    const minimum = reducedMotion ? 300 : 1500
+    minimumTimer = window.setTimeout(() => {
+      criticalReady.then(finish)
+    }, minimum)
+    capTimer = window.setTimeout(finish, reducedMotion ? 450 : 3000)
+
+    return () => {
+      window.clearTimeout(minimumTimer)
+      window.clearTimeout(capTimer)
+      document.body.classList.remove('lupo-intro-active')
+      void startedAt
+    }
+  }, [onDone, show])
+
+  if (!show) return null
+  return <div className={`lupo-intro fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#14241A]${exiting ? ' is-exiting' : ''}`} role="status" aria-label="Loading LUPO">
+    <div className="lupo-intro-logo"><Image src="/icon.svg" alt="LUPO" width={176} height={176} priority /></div>
+    <div className="lupo-intro-progress" aria-hidden="true"><span /></div>
+    <button onClick={() => { sessionStorage.setItem('lupo-intro', '1'); document.documentElement.dataset.lupoIntroSeen = '1'; document.body.classList.remove('lupo-intro-active'); setExiting(true); window.setTimeout(() => { setShow(false); onDone() }, 300) }} className="absolute bottom-8 text-xs uppercase tracking-[.28em] text-[#A9A38F] hover:text-[#F2E8D5]">Skip intro</button>
   </div>
 }
 
@@ -29,7 +81,7 @@ function Header({ lang, setLang }: { lang: string, setLang: (l:string)=>void }) 
 const t = { EN: { kicker:'Cafe · Padel · Restaurant', title:'Taste of Luxury', place:'Ring Road, Mansoura', explore:'Explore the menu', book:'Book a court / Padel', vibe:'A place with a pulse', vibeText:'Where considered design meets the energy of the game, and every cup has a story.', featured:'The Lupo edit', menuText:'A considered menu for long afternoons and late-night rituals.', padel:'Play after dark', padelText:'Two panoramic courts, floodlit for the golden hour and beyond.', visit:'Find your way to Lupo' }, AR: { kicker:'كافيه · بادل · مطعم', title:'طعم الفخامة', place:'الطريق الدائري، المنصورة', explore:'اكتشف القائمة', book:'احجز ملعب بادل', vibe:'مكان ينبض بالحياة', vibeText:'حيث يلتقي التصميم المدروس بطاقة اللعب، وكل فنجان له حكايته.', featured:'اختيارات LUPO', menuText:'قائمة مختارة لأمسيات طويلة وطقوس ليلية.', padel:'العب بعد الغروب', padelText:'ملعبان بانوراميان بإضاءة مثالية للساعة الذهبية وما بعدها.', visit:'طريقك إلى LUPO' } }
 
 export default function Home() { const [ready,setReady]=useState(false); const [lang,setLang]=useState('EN'); const copy=t[lang as 'EN'|'AR']; return <><Intro onDone={()=>setReady(true)} /> <div dir={lang==='AR'?'rtl':'ltr'} className={ready?'':'h-screen overflow-hidden'}><Header lang={lang} setLang={setLang}/><main>
-  <section className="hero-glow grain relative flex min-h-[92vh] items-end overflow-hidden px-5 pb-16 pt-28 sm:px-10 md:min-h-screen md:items-center md:pb-20"><div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,#14241A_78%)]"/><div className="absolute left-1/2 top-[12%] h-[560px] w-[560px] -translate-x-1/2 opacity-20 blur-3xl md:top-[4%] md:h-[760px] md:w-[760px] bg-[#D4B98A] rounded-full"/><div className="absolute -right-24 top-20 h-[520px] w-[520px] opacity-90 md:right-[8%] md:top-[8%] md:h-[700px] md:w-[700px]"><Image src={logo} alt="" fill className="object-contain" priority /></div><div className="relative z-10 max-w-3xl reveal" style={{animationDelay:'2.9s'}}><p className="mb-6 text-xs uppercase tracking-[.3em] text-[#D4B98A]">{copy.kicker}</p><h1 className="font-display text-6xl leading-[.92] tracking-[-.04em] text-[#F2E8D5] sm:text-8xl md:text-[9rem]">{copy.title}</h1><div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-[#A9A38F]"><MapPin className="size-4 text-[#D4B98A]"/> {copy.place}</div><div className="mt-9 flex flex-wrap gap-3"><Link href="/menu" className="lupo-primary inline-flex items-center">{copy.explore}</Link><a href="#padel" className="lupo-secondary inline-flex items-center">{copy.book}</a></div></div><a href="#vibe" className="lupo-text-link absolute bottom-7 left-1/2 -translate-x-1/2">Scroll to explore</a></section>
+  <section className="hero-glow grain relative flex min-h-[92vh] items-end overflow-hidden px-5 pb-16 pt-28 sm:px-10 md:min-h-screen md:items-center md:pb-20"><div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,#14241A_78%)]"/><div className="absolute left-1/2 top-[12%] h-[560px] w-[560px] -translate-x-1/2 opacity-20 blur-3xl md:top-[4%] md:h-[760px] md:w-[760px] bg-[#D4B98A] rounded-full"/><div className="absolute -right-24 top-20 h-[520px] w-[520px] opacity-90 md:right-[8%] md:top-[8%] md:h-[700px] md:w-[700px]"><Image src={logo} alt="" fill className="object-contain" loading="lazy" /></div><div className="relative z-10 max-w-3xl reveal" style={{animationDelay:'2.9s'}}><p className="mb-6 text-xs uppercase tracking-[.3em] text-[#D4B98A]">{copy.kicker}</p><h1 className="font-display text-6xl leading-[.92] tracking-[-.04em] text-[#F2E8D5] sm:text-8xl md:text-[9rem]">{copy.title}</h1><div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-[#A9A38F]"><MapPin className="size-4 text-[#D4B98A]"/> {copy.place}</div><div className="mt-9 flex flex-wrap gap-3"><Link href="/menu" className="lupo-primary inline-flex items-center">{copy.explore}</Link><a href="#padel" className="lupo-secondary inline-flex items-center">{copy.book}</a></div></div><a href="#vibe" className="lupo-text-link absolute bottom-7 left-1/2 -translate-x-1/2">Scroll to explore</a></section>
   <div className="overflow-hidden border-y border-[#D4B98A]/20 py-4"><div className="marquee-track flex gap-8 whitespace-nowrap text-[11px] uppercase tracking-[.3em] text-[#D4B98A]">{Array(4).fill('Specialty Coffee · Padel Courts · Fine Dining · Takeaway ·').map((x,i)=><span key={i}>{x}</span>)}</div></div>
   <section id="vibe" className="mx-auto max-w-7xl px-5 py-24 sm:px-10 md:py-36"><div className="mb-12 max-w-xl"><p className="mb-4 text-xs uppercase tracking-[.28em] text-[#D4B98A]">01 / The house</p><h2 className="font-display text-5xl leading-none sm:text-7xl">{copy.vibe}</h2><p className="mt-6 text-base leading-7 text-[#A9A38F]">{copy.vibeText}</p></div><div className="grid auto-rows-[220px] gap-3 md:grid-cols-3 md:auto-rows-[260px]"><Vibe image={photos[0]} title="Cafe" cls="md:col-span-2"/><Vibe image={photos[1]} title="Padel"/><Vibe image={photos[2]} title="Restaurant"/><Vibe image={photos[3]} title="Takeaway" cls="md:col-span-2"/></div></section>
   <section className="bg-[#1B3023] px-5 py-24 sm:px-10 md:py-32"><div className="mx-auto max-w-7xl"><div className="flex flex-wrap items-end justify-between gap-6"><div><p className="mb-4 text-xs uppercase tracking-[.28em] text-[#D4B98A]">02 / Menu</p><h2 className="font-display text-5xl sm:text-7xl">{copy.featured}</h2><p className="mt-4 max-w-md text-[#A9A38F]">{copy.menuText}</p></div><Link href="/menu" className="lupo-text-link">Explore full menu</Link></div><div className="mt-12 flex snap-x gap-4 overflow-x-auto pb-5"><MenuCard image={photos[0][0]} name="Pistachio Cloud" price="185 EGP"/><MenuCard image="https://images.unsplash.com/photo-1572449043416-55f1a5c76f6c?auto=format&fit=crop&w=700&q=85" name="Spanish Latte" price="160 EGP"/><MenuCard image="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=700&q=85" name="Lupo Spritz" price="195 EGP"/></div></div></section>
