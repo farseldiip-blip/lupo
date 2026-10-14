@@ -22,29 +22,6 @@ body { margin:0; width:100%; background:var(--forest); color:var(--cream); font-
 .font-display { font-family:Georgia, 'Times New Roman', serif; }
 ::selection { background:var(--gold); color:var(--forest); }
 .grain { background-image: radial-gradient(rgba(242,232,213,.06) .7px, transparent .7px); background-size:5px 5px; }
-html.lupo-intro-seen #lupo-intro-shell { display:none; }
-html.lupo-intro-active, html.lupo-intro-active body { overflow:hidden; }
-.lupo-intro { z-index:9999; background:transparent; }
-.lupo-intro-shell { contain:strict; }
-.lupo-intro button { pointer-events:auto; }
-.lupo-intro.is-exiting { pointer-events:none; }
-.lupo-intro-surface { position:absolute; inset:0; display:grid; place-items:center; background:var(--forest); }
-.lupo-intro-logo { position:relative; z-index:1; width:min(78vw,420px); height:auto; animation:intro-logo 700ms cubic-bezier(.2,.8,.2,1) both; }
-.lupo-intro-surface::before,.lupo-intro-surface::after { position:absolute; z-index:2; left:0; right:0; height:50%; background:var(--forest); content:''; opacity:0; }
-.lupo-intro-surface::before { top:0; }
-.lupo-intro-surface::after { bottom:0; }
-.lupo-intro.is-exiting .lupo-intro-surface { background:transparent; }
-.lupo-intro.is-exiting .lupo-intro-surface::before,.lupo-intro.is-exiting .lupo-intro-surface::after { opacity:1; }
-.lupo-intro.is-exiting .lupo-intro-surface::before { animation:curtain-up .85s cubic-bezier(.76,0,.24,1) both; }
-.lupo-intro.is-exiting .lupo-intro-surface::after { animation:curtain-down .85s cubic-bezier(.76,0,.24,1) both; }
-.lupo-intro.is-exiting .lupo-intro-logo,.lupo-intro.is-exiting .lupo-intro-progress { opacity:0; transition:opacity 180ms ease; }
-.lupo-intro-progress { position:absolute; top:calc(50% + min(39vw,210px)); width:min(32vw,170px); height:1px; overflow:hidden; background:rgba(212,185,138,.2); }
-.lupo-intro-progress span { display:block; width:100%; height:100%; transform:scaleX(0); transform-origin:left; animation:intro-progress 2s linear both; background:var(--gold); }
-.lupo-intro.is-exiting { pointer-events:none; transform:translateY(-100%); border-bottom:1px solid var(--gold); }
-@keyframes intro-logo { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
-@keyframes intro-progress { to { transform:scaleX(1); } }
-@keyframes curtain-up { to { transform:translateY(-100%); } }
-@keyframes curtain-down { to { transform:translateY(100%); } }
 .gold-line { border-color:var(--line); }
 .lupo-primary,.lupo-secondary { position:relative; min-height:44px; border-radius:5px; padding:0.85rem 1.35rem; font-size:.7rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; transition:transform 250ms ease, background-color 250ms ease, color 250ms ease, border-color 250ms ease; }
 .lupo-primary { background:var(--gold); color:var(--forest); }
@@ -90,32 +67,19 @@ html.lupo-intro-active, html.lupo-intro-active body { overflow:hidden; }
   At 360x640 the ceiling is 116px (that needs zero safety); at 10px safety the wolf lands at 106px.
 */
 .hero-wolf { width:max(88px,min(70vw,560px,calc(100svh - 443px - 2 * clamp(44px,12vw,56px) * 0.92 - 10px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))); aspect-ratio:1 / 1; }
-.hero-step,.hero-wolf,.hero-scroll { opacity:0; transform:translateY(24px); }
-.hero-wolf { transform:scale(1.06); }
-/* Must stay after the opacity:0 group above so translateX(-50%) is not clobbered. */
-.hero-scroll { position:absolute; left:50%; bottom:calc(var(--nav-h) + var(--nav-gap) + var(--cue-clear) + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(24px); }
+.hero-scroll { position:absolute; left:50%; bottom:calc(var(--nav-h) + var(--nav-gap) + var(--cue-clear) + env(safe-area-inset-bottom)); transform:translateX(-50%); }
 /* Tick sits INSIDE the 44px cue box (was bottom:-1.6rem, which hung 25.6px below it and behind the nav).
    Box bottom = 86px from the fold, so this spans 88-98px: ~18px above the nav top and ~3px under the label. */
 .hero-scroll::after { right:50%; bottom:2px; left:auto; width:1px; height:10px; transform:translateX(50%); }
-.hero.is-ready .hero-wolf { animation:hero-wolf-in .9s ease-out both; }
-.hero.is-ready .hero-step { animation:hero-step-in .7s cubic-bezier(.2,.8,.2,1) both; }
-.hero.is-ready .hero-step:nth-child(1) { animation-delay:.35s; }
-.hero.is-ready .hero-step:nth-child(2) { animation-delay:.43s; }
-.hero.is-ready .hero-step:nth-child(3) { animation-delay:.51s; }
-.hero.is-ready .hero-step:nth-child(4) { animation-delay:.59s; }
 .marquee-track { animation:marquee 28s linear infinite; width:max-content; }
 @keyframes marquee { to { transform:translateX(-50%); } }
 .reveal { animation:rise .8s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes hero-step-in { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-@keyframes hero-wolf-in { from { opacity:0; transform:scale(1.06); } to { opacity:1; transform:scale(1); } }
 @keyframes rise { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
 @keyframes curtain { 0% { transform:translateY(0) } 100% { transform:translateY(-105%) } }
 .curtain { animation:curtain 1.1s cubic-bezier(.76,0,.24,1) .1s both; }
 @media (max-width:767px) {
   .hero-title { font-size:clamp(44px,12vw,56px); }
 }
-.hero.is-ready .hero-scroll { animation:hero-scroll-in .6s ease-out .8s both; }
-@keyframes hero-scroll-in { from { opacity:0; transform:translateX(-50%) translateY(24px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 @media (min-width:768px) {
   .hero { padding-top:7rem; padding-bottom:7rem; }
   .hero-copy { max-width:48%; }
@@ -123,9 +87,4 @@ html.lupo-intro-active, html.lupo-intro-active body { overflow:hidden; }
 }
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
-  .hero.is-ready .hero-wolf,.hero.is-ready .hero-step,.hero.is-ready .hero-scroll { animation:hero-step-in 300ms ease both!important; }
-  .hero.is-ready .hero-wolf { animation-name:hero-wolf-in!important; }
-  .hero-wolf { transform:none; }
-  .lupo-intro-logo,.lupo-intro-progress span { animation:none!important; opacity:1; transform:none; }
-  .lupo-intro.is-exiting { transition-duration:300ms!important; }
 }

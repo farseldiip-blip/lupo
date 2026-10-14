@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Clock3, Coffee, Camera, MapPin, MessageCircle, Sun, Users } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { siteConfig } from '@/lib/site-config'
 
 const photos = [
@@ -20,46 +20,12 @@ const photos = [
 const bentoPhotos = photos.slice(0, 4)
 const galleryPhotos = photos.slice(4)
 
-function Intro({ onDone }: { onDone: () => void }) {
-  useEffect(() => {
-    const shell = document.getElementById('lupo-intro-shell')
-    const skip = document.getElementById('lupo-intro-skip')
-    if (!shell || document.documentElement.classList.contains('lupo-intro-seen')) {
-      onDone()
-      return
-    }
-    document.documentElement.classList.add('lupo-intro-active')
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let exitTimer: number | undefined
-    const finish = () => {
-      shell.classList.add('is-exiting')
-      exitTimer = window.setTimeout(() => {
-        try { sessionStorage.setItem('lupo-intro', '1') } catch {}
-        document.documentElement.classList.remove('lupo-intro-active')
-        shell.remove()
-        onDone()
-      }, reducedMotion ? 300 : 850)
-    }
-    const introTimer = window.setTimeout(finish, reducedMotion ? 300 : 2000)
-    const failsafeTimer = window.setTimeout(finish, 3500)
-    const handleSkip = () => finish()
-    skip?.addEventListener('click', handleSkip)
-    return () => {
-      window.clearTimeout(introTimer)
-      window.clearTimeout(failsafeTimer)
-      if (exitTimer) window.clearTimeout(exitTimer)
-      skip?.removeEventListener('click', handleSkip)
-    }
-  }, [onDone])
-  return null
-}
-
 function Header({ lang, setLang }: { lang: string, setLang: (l:string)=>void }) { return <header className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-5 py-5 sm:px-10"><Link href="/" aria-label="LUPO home" className="block h-12 w-12 overflow-hidden rounded-full"><Image src="/lupo-logo.svg" alt="LUPO" width={96} height={96} className="size-full object-cover" priority /></Link><nav className="hidden items-center gap-8 text-[11px] uppercase tracking-[.22em] text-[#A9A38F] md:flex"><a href="#vibe" className="hover:text-[#D4B98A]">Vibe</a><a href="#padel" className="hover:text-[#D4B98A]">Padel</a><Link href="/menu" className="hover:text-[#D4B98A]">Menu</Link><a href="#visit" className="hover:text-[#D4B98A]">Visit</a></nav><button onClick={() => setLang(lang === 'EN' ? 'AR' : 'EN')} className="lupo-secondary inline-flex items-center px-3 py-2 text-[10px]" aria-label="Toggle language">{lang === 'EN' ? 'عربي' : 'EN'}</button></header> }
 
 const t = { EN: { kicker:'Cafe · Padel · Restaurant', title:'Taste of Luxury', place:'Ring Road, Mansoura', explore:'Explore the menu', book:'Book a court / Padel', vibe:'A place with a pulse', vibeText:'Where considered design meets the energy of the game, and every cup has a story.', featured:'The Lupo edit', menuText:'A considered menu for long afternoons and late-night rituals.', padel:'Play after dark', padelText:'Two panoramic courts, floodlit for the golden hour and beyond.', visit:'Find your way to Lupo' }, AR: { kicker:'كافيه · بادل · مطعم', title:'طعم الفخامة', place:'الطريق الدائري، المنصورة', explore:'اكتشف القائمة', book:'احجز ملعب بادل', vibe:'مكان ينبض بالحياة', vibeText:'حيث يلتقي التصميم المدروس بطاقة اللعب، وكل فنجان له حكايته.', featured:'اختيارات LUPO', menuText:'قائمة مختارة لأمسيات طويلة وطقوس ليلية.', padel:'العب بعد الغروب', padelText:'ملعبان بانوراميان بإضاءة مثالية للساعة الذهبية وما بعدها.', visit:'طريقك إلى LUPO' } }
 
-export default function Home() { const [ready,setReady]=useState(false); const [lang,setLang]=useState('EN'); const copy=t[lang as 'EN'|'AR']; const handleIntroDone = useCallback(() => setReady(true), []); return <><Intro onDone={handleIntroDone} /> <div dir={lang==='AR'?'rtl':'ltr'}><Header lang={lang} setLang={setLang}/><main>
-  <section className={`hero-glow grain hero relative flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden px-6 text-center md:min-h-screen md:flex-row md:items-center md:justify-between md:px-10 md:text-left ${ready ? 'is-ready' : ''}`}><div className="hero-vignette absolute inset-0 z-0"/><div className="hero-halo absolute left-1/2 top-[12%] z-0 -translate-x-1/2 rounded-full blur-3xl"/><div className="hero-block relative z-10 flex w-full flex-col items-center gap-7 md:flex-row md:justify-between"><div className="hero-wolf pointer-events-none shrink-0 md:absolute md:right-[8%] md:top-1/2" aria-hidden="true"><svg viewBox="0 0 1080 1080" className="size-full"><use href="/lupo-logo.svg#wolf" /></svg></div><div className="hero-copy relative z-10 flex w-full max-w-[320px] flex-col items-center md:max-w-3xl md:items-start"><p className="hero-step hero-kicker mb-5 whitespace-nowrap text-[10px] uppercase tracking-[.18em] text-[#D4B98A]">{copy.kicker}</p><h1 className="hero-step hero-title font-display text-[clamp(44px,12vw,56px)] leading-[.92] tracking-[-.04em] text-[#F2E8D5] sm:text-8xl md:text-[9rem]">{copy.title}</h1><div className="hero-step mt-6 flex items-center gap-3 whitespace-nowrap text-sm text-[#A9A38F]"><MapPin className="size-4 shrink-0 text-[#D4B98A]"/> {copy.place}</div><div className="hero-step mt-6 flex w-full flex-col gap-3 sm:flex-row md:w-auto"><Link href="/menu" className="lupo-primary inline-flex h-[52px] w-full items-center justify-center md:w-auto">{copy.explore}</Link><a href="#padel" className="lupo-secondary inline-flex h-[52px] w-full items-center justify-center md:w-auto">{copy.book}</a></div></div></div><a href="#vibe" className="hero-scroll lupo-text-link z-10 w-max -translate-x-1/2 whitespace-nowrap">Scroll</a></section>
+export default function Home() { const [lang,setLang]=useState('EN'); const copy=t[lang as 'EN'|'AR']; return <><div dir={lang==='AR'?'rtl':'ltr'}><Header lang={lang} setLang={setLang}/><main>
+  <section className="hero-glow grain hero relative flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden px-6 text-center md:min-h-screen md:flex-row md:items-center md:justify-between md:px-10 md:text-left"><div className="hero-vignette absolute inset-0 z-0"/><div className="hero-halo absolute left-1/2 top-[12%] z-0 -translate-x-1/2 rounded-full blur-3xl"/><div className="hero-block relative z-10 flex w-full flex-col items-center gap-7 md:flex-row md:justify-between"><div className="hero-wolf pointer-events-none shrink-0 md:absolute md:right-[8%] md:top-1/2" aria-hidden="true"><svg viewBox="0 0 1080 1080" className="size-full"><use href="/lupo-logo.svg#wolf" /></svg></div><div className="hero-copy relative z-10 flex w-full max-w-[320px] flex-col items-center md:max-w-3xl md:items-start"><p className="hero-step hero-kicker mb-5 whitespace-nowrap text-[10px] uppercase tracking-[.18em] text-[#D4B98A]">{copy.kicker}</p><h1 className="hero-step hero-title font-display text-[clamp(44px,12vw,56px)] leading-[.92] tracking-[-.04em] text-[#F2E8D5] sm:text-8xl md:text-[9rem]">{copy.title}</h1><div className="hero-step mt-6 flex items-center gap-3 whitespace-nowrap text-sm text-[#A9A38F]"><MapPin className="size-4 shrink-0 text-[#D4B98A]"/> {copy.place}</div><div className="hero-step mt-6 flex w-full flex-col gap-3 sm:flex-row md:w-auto"><Link href="/menu" className="lupo-primary inline-flex h-[52px] w-full items-center justify-center md:w-auto">{copy.explore}</Link><a href="#padel" className="lupo-secondary inline-flex h-[52px] w-full items-center justify-center md:w-auto">{copy.book}</a></div></div></div><a href="#vibe" className="hero-scroll lupo-text-link z-10 w-max -translate-x-1/2 whitespace-nowrap">Scroll</a></section>
   <div className="overflow-hidden border-y border-[#D4B98A]/20 py-4"><div className="marquee-track flex gap-8 whitespace-nowrap text-[11px] uppercase tracking-[.3em] text-[#D4B98A]">{Array(4).fill('Specialty Coffee · Padel Courts · Fine Dining · Takeaway ·').map((x,i)=><span key={i}>{x}</span>)}</div></div>
   <section id="vibe" className="mx-auto max-w-7xl px-5 py-24 pb-32 sm:px-10 md:py-36 md:pb-36"><div className="mb-12 max-w-xl"><p className="mb-4 text-xs uppercase tracking-[.28em] text-[#D4B98A]">01 / The house</p><h2 className="font-display text-5xl leading-none sm:text-7xl">{copy.vibe}</h2><p className="mt-6 text-base leading-7 text-[#A9A38F]">{copy.vibeText}</p></div><div className="grid auto-rows-[220px] gap-3 md:grid-cols-3 md:auto-rows-[260px]"><Vibe image={bentoPhotos[0]} title="Cafe" cls="md:col-span-2"/><Vibe image={bentoPhotos[1]} title="Restaurant"/><Vibe image={bentoPhotos[2]} title="Takeaway"/><Vibe image={bentoPhotos[3]} title="Padel" cls="md:col-span-2"/></div></section>
   <section className="bg-[#1B3023] px-5 py-24 pb-32 sm:px-10 md:py-32"><div className="mx-auto max-w-7xl"><div className="flex flex-wrap items-end justify-between gap-6"><div><p className="mb-4 text-xs uppercase tracking-[.28em] text-[#D4B98A]">02 / Menu</p><h2 className="font-display text-5xl sm:text-7xl">{copy.featured}</h2><p className="mt-4 max-w-md text-[#A9A38F]">{copy.menuText}</p></div><Link href="/menu" className="lupo-text-link">Explore full menu</Link></div><div className="mt-12 flex snap-x gap-4 overflow-x-auto pb-5"><MenuCard image={galleryPhotos[0][0]} name="Pistachio Cloud" price="185 EGP"/><MenuCard image={galleryPhotos[1][0]} name="Spanish Latte" price="160 EGP"/><MenuCard image={galleryPhotos[2][0]} name="Lupo Spritz" price="195 EGP"/></div></div></section>
