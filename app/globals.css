@@ -13,9 +13,11 @@
   --radius-lg: 1.25rem;
 }
 
-:root { --forest:#14241A; --forest-deep:#0D1A12; --surface:#1B3023; --gold:#D4B98A; --cream:#F2E8D5; --muted:#A9A38F; --line:rgba(212,185,138,.28); --nav-h:58px; --nav-gap:12px; --cue-clear:16px; --cue-h:44px; /* --header-h is where the header's VISIBLE content ends: py-5 (20px) + the 48px h-12 logo. The
+:root { --forest:#14241A; --forest-deep:#0D1A12; --surface:#1B3023; --gold:#D4B98A; --cream:#F2E8D5; --muted:#A9A38F; --line:rgba(212,185,138,.28); --nav-h:58px; --nav-gap:12px; --cue-clear:12px; --cue-h:40px; /* --header-h is where the header's VISIBLE content ends: py-5 (20px) + the 48px h-12 logo. The
    header is position:absolute, so only its content needs clearing, not its 20px trailing padding. */
---header-h:68px; --cue-zone:calc(var(--nav-h) + var(--nav-gap) + var(--cue-clear) + var(--cue-h)); color-scheme:dark; }
+--header-h:68px; /* What the fixed nav actually occupies above the safe-area edge: --nav-gap + --nav-h.
+   The hero's bottom reservation is built from this same number, so the two can never drift apart. */
+--nav-footprint:calc(var(--nav-gap) + var(--nav-h)); --cue-zone:calc(var(--nav-footprint) + var(--cue-clear) + var(--cue-h)); color-scheme:dark; }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; width:100%; overflow-x:clip; }
 body { margin:0; width:100%; background:var(--forest); color:var(--cream); font-family:Arial, Helvetica, sans-serif; overflow-x:clip; }
@@ -36,7 +38,14 @@ body { margin:0; width:100%; background:var(--forest); color:var(--cream); font-
 .lupo-text-link:hover::after { transform:scaleX(1); }
 [dir='rtl'] .lupo-secondary::before,[dir='rtl'] .lupo-text-link::after { transform-origin:right; }
 @media (prefers-reduced-motion:reduce) { .lupo-primary,.lupo-secondary,.lupo-secondary::before,.lupo-text-link::after { transition:none; } }
-.hero { position:relative; padding-top:calc(var(--header-h) + env(safe-area-inset-top)); padding-bottom:calc(var(--cue-zone) + env(safe-area-inset-bottom)); }
+.hero { position:relative; padding-top:calc(var(--header-h) + env(safe-area-inset-top)); padding-bottom:calc(var(--cue-zone) + env(safe-area-inset-bottom));
+  /* The fixed nav is painted against the VISUAL viewport, so the hero must reserve space against the
+     same viewport. min-h-[100svh] on the section is the SMALL viewport (URL bar expanded), which on a
+     real phone is shorter than what is actually visible - the reserved band then sits above the nav
+     instead of directly under it. 100dvh tracks the real visible height. Declared here (unlayered) so
+     it beats the svh utility where supported and simply falls back to svh where dvh is unknown. */
+  min-height:100dvh;
+  --wolf:min(70vw,560px,calc(100svh - 437px - 0.92 * clamp(44px,12vw,56px) - env(safe-area-inset-top) - env(safe-area-inset-bottom))); }
 .hero-vignette { background:radial-gradient(ellipse at 50% 36%, #1B3023 0%, #14241A 70%); }
 .hero-halo { background:#1B3023; opacity:.55; width:min(92vw,760px); height:min(92vw,760px); }
 
@@ -48,29 +57,40 @@ body { margin:0; width:100%; background:var(--forest); color:var(--cream); font-
   header and the scroll-cue zone, so leftover height is split evenly above and below the block.
 
     header 68px ( --header-h )  +  safe-area-inset-top
-    wolf   -> width below, grows to 70vw on tall screens
-    28px   wolf -> kicker        (.hero-block gap)
-    20px + 12px  kicker
+    wolf   -> width below
+    24px   wolf -> kicker        (.hero-block gap)
+    16px + 15px  kicker
     H1     clamp(44px,12vw,56px), leading .92
-    24px + 21px  location
+    24px + 20px  location
     24px + 116px two 52px buttons, 12px apart
-    cue zone 130px ( --cue-zone ) + safe-area-inset-bottom   <- Scroll cue sits at its bottom
+    cue zone 122px ( --cue-zone ) + safe-area-inset-bottom   <- Scroll cue sits at its bottom
 
-  Fixed chrome                = 68 ( --header-h ) + 130 ( --cue-zone ) = 198
-  Fixed block height (no H1)  = 28 + 12 + 20 + 24 + 21 + 24 + 116 = 245
-  wolf max = 100svh - 198 - 245 - H1_reserve - 10(safety) = 100svh - 443 - H1_reserve - 10
+  Fixed chrome               = 68 + 122 = 190
+  Fixed block height (no H1) = 24 + 15 + 16 + 24 + 20 + 24 + 116 = 239
+  wolf max = 100svh - 190 - 239 - H1_one_line - 8(safety) - safe insets
+           = 100svh - 437 - 0.92 * clamp(44px,12vw,56px) - safe insets
 
-  H1_reserve is TWO lines, not one, so a wrapped headline can never push the buttons or the
-  Scroll cue behind the bottom nav on any device or font stack. 2 * clamp(...) * 0.92 tracks the
-  real headline size, so tall phones keep the large wolf while short phones stay safe.
-
-  At 360x640 the ceiling is 116px (that needs zero safety); at 10px safety the wolf lands at 106px.
+  Two guards, because a single formula cannot know how tall the headline will wrap:
+    1. this size calc, budgeted from the ONE-line headline;
+    2. .hero-block max-height below, a HARD structural clamp.
+  For guard 2 to work the wolf has to actually absorb the deficit, and flexbox scales flex-shrink by the
+  item's FLEX BASE SIZE. An aspect-ratio-derived height is not a reliable base size: where it resolves
+  indeterminate the scaled shrink factor is 0, the wolf cannot shrink, and max-height is exceeded -
+  which does NOT clip, so children spill downward and the CTAs slide under the fixed nav.
+  So the wolf's height is set explicitly here, making its base size definite and non-zero. Width and
+  height come from one --wolf value so they can never disagree; the SVG letterboxes (meet) if the box
+  is ever squeezed, so the artwork stays proportional and undistorted.
+  The 48px floor sits far below what any supported viewport can demand, so it cannot force overflow.
 */
-.hero-wolf { width:max(88px,min(70vw,560px,calc(100svh - 443px - 2 * clamp(44px,12vw,56px) * 0.92 - 10px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))); aspect-ratio:1 / 1; }
-.hero-scroll { position:absolute; left:50%; bottom:calc(var(--nav-h) + var(--nav-gap) + var(--cue-clear) + env(safe-area-inset-bottom)); transform:translateX(-50%); }
-/* Tick sits INSIDE the 44px cue box (was bottom:-1.6rem, which hung 25.6px below it and behind the nav).
-   Box bottom = 86px from the fold, so this spans 88-98px: ~18px above the nav top and ~3px under the label. */
-.hero-scroll::after { right:50%; bottom:2px; left:auto; width:1px; height:10px; transform:translateX(50%); }
+.hero-wolf { width:max(48px,var(--wolf)); height:max(48px,var(--wolf)); flex:0 1 auto; min-height:0; }
+.hero-block { max-height:calc(100svh - var(--header-h) - var(--cue-zone) - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+/* min-height is bound to --cue-h so the variable and the real box can never disagree (same reason
+   --nav-h is bound to .bottom-nav); otherwise the 40px zone reserved 44px of real element and ate
+   4px of the CTA-to-cue gap. */
+.hero-scroll { position:absolute; left:50%; bottom:calc(var(--nav-h) + var(--nav-gap) + var(--cue-clear) + env(safe-area-inset-bottom)); transform:translateX(-50%); min-height:var(--cue-h); }
+/* Tick sits INSIDE the cue box (was bottom:-1.6rem, which hung 25.6px below it and behind the nav).
+   bottom:2px puts its lower edge 2px above the box bottom = --cue-clear + 2px above the nav top. */
+.hero-scroll::after { right:50%; bottom:2px; left:auto; width:1px; height:8px; transform:translateX(50%); }
 .marquee-track { animation:marquee 28s linear infinite; width:max-content; }
 @keyframes marquee { to { transform:translateX(-50%); } }
 .reveal { animation:rise .8s cubic-bezier(.2,.8,.2,1) both; }
@@ -82,8 +102,9 @@ body { margin:0; width:100%; background:var(--forest); color:var(--cream); font-
 }
 @media (min-width:768px) {
   .hero { padding-top:7rem; padding-bottom:7rem; }
+  .hero-block { max-height:none; }
   .hero-copy { max-width:48%; }
-  .hero-wolf { width:min(52vw,700px); translate:0 -50%; }
+  .hero-wolf { width:min(52vw,700px); height:min(52vw,700px); translate:0 -50%; }
 }
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
