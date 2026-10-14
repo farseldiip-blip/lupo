@@ -22,15 +22,17 @@ body { margin:0; background:var(--forest); color:var(--cream); font-family:Arial
 .grain { background-image: radial-gradient(rgba(242,232,213,.06) .7px, transparent .7px); background-size:5px 5px; }
 html.lupo-intro-seen #lupo-intro-shell { display:none; }
 html.lupo-intro-active, html.lupo-intro-active body { overflow:hidden; }
-.lupo-intro { z-index:100; background:transparent; }
+.lupo-intro { z-index:9999; background:transparent; }
+.lupo-intro-shell { contain:strict; }
 .lupo-intro button { pointer-events:auto; }
 .lupo-intro.is-exiting { pointer-events:none; }
 .lupo-intro-surface { position:absolute; inset:0; display:grid; place-items:center; background:var(--forest); }
 .lupo-intro-logo { position:relative; z-index:1; width:min(78vw,420px); height:auto; animation:intro-logo 700ms cubic-bezier(.2,.8,.2,1) both; }
-.lupo-intro-surface::before,.lupo-intro-surface::after { position:absolute; z-index:2; left:0; right:0; height:50%; background:var(--forest); content:''; }
+.lupo-intro-surface::before,.lupo-intro-surface::after { position:absolute; z-index:2; left:0; right:0; height:50%; background:var(--forest); content:''; opacity:0; }
 .lupo-intro-surface::before { top:0; }
 .lupo-intro-surface::after { bottom:0; }
 .lupo-intro.is-exiting .lupo-intro-surface { background:transparent; }
+.lupo-intro.is-exiting .lupo-intro-surface::before,.lupo-intro.is-exiting .lupo-intro-surface::after { opacity:1; }
 .lupo-intro.is-exiting .lupo-intro-surface::before { animation:curtain-up .85s cubic-bezier(.76,0,.24,1) both; }
 .lupo-intro.is-exiting .lupo-intro-surface::after { animation:curtain-down .85s cubic-bezier(.76,0,.24,1) both; }
 .lupo-intro.is-exiting .lupo-intro-logo,.lupo-intro.is-exiting .lupo-intro-progress { opacity:0; transition:opacity 180ms ease; }
