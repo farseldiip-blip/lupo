@@ -15,8 +15,8 @@
 
 :root { --forest:#14241A; --forest-deep:#0D1A12; --surface:#1B3023; --gold:#D4B98A; --cream:#F2E8D5; --muted:#A9A38F; --line:rgba(212,185,138,.28); color-scheme:dark; }
 * { box-sizing:border-box; }
-html { scroll-behavior:smooth; }
-body { margin:0; background:var(--forest); color:var(--cream); font-family:Arial, Helvetica, sans-serif; overflow-x:hidden; }
+html { scroll-behavior:smooth; width:100%; overflow-x:clip; }
+body { margin:0; width:100%; background:var(--forest); color:var(--cream); font-family:Arial, Helvetica, sans-serif; overflow-x:clip; }
 .font-display { font-family:Georgia, 'Times New Roman', serif; }
 ::selection { background:var(--gold); color:var(--forest); }
 .grain { background-image: radial-gradient(rgba(242,232,213,.06) .7px, transparent .7px); background-size:5px 5px; }
@@ -57,15 +57,50 @@ html.lupo-intro-active, html.lupo-intro-active body { overflow:hidden; }
 .lupo-text-link:hover::after { transform:scaleX(1); }
 [dir='rtl'] .lupo-secondary::before,[dir='rtl'] .lupo-text-link::after { transform-origin:right; }
 @media (prefers-reduced-motion:reduce) { .lupo-primary,.lupo-secondary,.lupo-secondary::before,.lupo-text-link::after { transition:none; } }
-.hero-glow { background:radial-gradient(circle at 50% 40%, rgba(212,185,138,.18), transparent 38%); }
+.hero { position:relative; }
+.hero-vignette { background:radial-gradient(ellipse at 50% 36%, #1B3023 0%, #14241A 70%); }
+.hero-halo { background:#1B3023; opacity:.55; }
+.hero-step,.hero-wolf,.hero-scroll { opacity:0; transform:translateY(24px); }
+.hero-wolf { transform:scale(1.06); }
+.hero.is-ready .hero-wolf { animation:hero-wolf-in .9s ease-out both; }
+.hero.is-ready .hero-step { animation:hero-step-in .7s cubic-bezier(.2,.8,.2,1) both; }
+.hero.is-ready .hero-step:nth-child(1) { animation-delay:.35s; }
+.hero.is-ready .hero-step:nth-child(2) { animation-delay:.43s; }
+.hero.is-ready .hero-step:nth-child(3) { animation-delay:.51s; }
+.hero.is-ready .hero-step:nth-child(4) { animation-delay:.59s; }
+.hero.is-ready .hero-scroll { animation:hero-step-in .6s ease-out .8s both; }
 .marquee-track { animation:marquee 28s linear infinite; width:max-content; }
 @keyframes marquee { to { transform:translateX(-50%); } }
 .reveal { animation:rise .8s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes hero-step-in { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes hero-wolf-in { from { opacity:0; transform:scale(1.06); } to { opacity:1; transform:scale(1); } }
 @keyframes rise { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
 @keyframes curtain { 0% { transform:translateY(0) } 100% { transform:translateY(-105%) } }
 .curtain { animation:curtain 1.1s cubic-bezier(.76,0,.24,1) .1s both; }
+@media (max-width:767px) {
+  .hero-copy { min-height:38vh; justify-content:space-between; }
+  .hero-scroll::after { right:50%; bottom:-1.6rem; left:auto; width:1px; height:1.2rem; transform:translateX(50%); }
+}
+@media (min-width:480px) and (max-width:767px) {
+  .hero { padding-bottom:calc(230px + env(safe-area-inset-bottom)); }
+  .hero-wolf { width:52vw; height:52vw; margin-top:2vh; }
+  .hero-copy { min-height:30vh; transform:translateY(-42px); }
+  .hero-title { font-size:clamp(44px,12vw,56px)!important; }
+  .hero-scroll { bottom:calc(176px + env(safe-area-inset-bottom)); }
+}
+.hero-scroll { position:absolute!important; left:50%; transform:translateX(-50%) translateY(24px); }
+.hero.is-ready .hero-scroll { animation:hero-scroll-in .6s ease-out .8s both; }
+@keyframes hero-scroll-in { from { opacity:0; transform:translateX(-50%) translateY(24px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+@media (min-width:768px) {
+  .hero-copy { max-width:48%; }
+  .hero-wolf { opacity:0; }
+  .hero-scroll::after { right:50%; bottom:-1.6rem; left:auto; width:1px; height:1.2rem; transform:translateX(50%); }
+}
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+  .hero.is-ready .hero-wolf,.hero.is-ready .hero-step,.hero.is-ready .hero-scroll { animation:hero-step-in 300ms ease both!important; }
+  .hero.is-ready .hero-wolf { animation-name:hero-wolf-in!important; }
+  .hero-wolf { transform:none; }
   .lupo-intro-logo,.lupo-intro-progress span { animation:none!important; opacity:1; transform:none; }
   .lupo-intro.is-exiting { transition-duration:300ms!important; }
 }
