@@ -12,30 +12,14 @@ export const metadata: Metadata = {
     images: ['/lupo-logo.svg'],
   },
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/lupo-logo.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/lupo-logo.svg',
+    apple: '/lupo-logo.svg',
   },
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  colorScheme: 'dark',
+  themeColor: '#14241A',
 }
 
 export default function RootLayout({
@@ -45,8 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased" suppressHydrationWarning>
-        <script dangerouslySetInnerHTML={{ __html: `(() => { try { if (sessionStorage.getItem('lupo-intro') === '1') document.documentElement.dataset.lupoIntroSeen = '1'; else { document.documentElement.removeAttribute('data-lupo-intro-seen'); document.body.classList.add('lupo-intro-active') } } catch (_) {} })()` }} />
+      <body className="antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
