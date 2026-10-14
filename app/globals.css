@@ -20,8 +20,11 @@ body { margin:0; background:var(--forest); color:var(--cream); font-family:Arial
 .font-display { font-family:Georgia, 'Times New Roman', serif; }
 ::selection { background:var(--gold); color:var(--forest); }
 .grain { background-image: radial-gradient(rgba(242,232,213,.06) .7px, transparent .7px); background-size:5px 5px; }
-body.lupo-intro-active { overflow:hidden; }
+html.lupo-intro-seen #lupo-intro-shell { display:none; }
+html.lupo-intro-active, html.lupo-intro-active body { overflow:hidden; }
 .lupo-intro { z-index:100; background:transparent; }
+.lupo-intro button { pointer-events:auto; }
+.lupo-intro.is-exiting { pointer-events:none; }
 .lupo-intro-surface { position:absolute; inset:0; display:grid; place-items:center; background:var(--forest); }
 .lupo-intro-logo { position:relative; z-index:1; width:min(78vw,420px); height:auto; animation:intro-logo 700ms cubic-bezier(.2,.8,.2,1) both; }
 .lupo-intro-surface::before,.lupo-intro-surface::after { position:absolute; z-index:2; left:0; right:0; height:50%; background:var(--forest); content:''; }
