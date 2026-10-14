@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://lupo-nu.vercel.app'),
   title: 'LUPO — Taste of Luxury',
   description: 'Cafe · Padel · Restaurant on the ring road in Mansoura, Egypt.',
   generator: 'v0.app',
